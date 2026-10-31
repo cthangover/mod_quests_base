@@ -104,5 +104,31 @@
         }
       ]
     }
+  ],
+  "Kinds": [
+    {
+      "Kind": "quest",
+      "Name": "quests/schema/kind/quest",
+      "Description": "quests/schema/kind/quest_desc",
+      "Folder": "quests",
+      "NewId": "{mod}/new_quest",
+      "Order": 20,
+      "Fields": [
+        {
+          "Key": "Name",
+          "Type": "locale",
+          "KeyPattern": "{mod}/quest/{id}/name",
+          "Name": "quests/schema/field/quest_name",
+          "Description": "quests/schema/field/quest_name_desc"
+        },
+        {
+          "Key": "StatusToDescription",
+          "Type": "stages",
+          "KeyPattern": "{mod}/quest/{id}/{n}",
+          "Name": "quests/schema/field/stages",
+          "Description": "quests/schema/field/stages_desc"
+        }
+      ]
+    }
   ]
 }
