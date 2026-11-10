@@ -1,10 +1,13 @@
-using System;
-using Cthangover.Core.Events;
-using Cthangover.Core.Quests;
-using Cthangover.Core.Utils;
-
 namespace Cthangover.Core.Actions
 {
+    using System;
+    using Cthangover.Core.Audio;
+    using Cthangover.Core.Events;
+    using Cthangover.Core.Quests;
+    using Cthangover.Core.Scenes;
+    using Cthangover.Core.Utils;
+    using Godot;
+
     /// <summary>
     /// Quest service implementation with internal TryGet for safe fallback.
     /// Public methods (SetStatus, SetDataStatus, AddTag, etc.) use TryGet which
@@ -68,7 +71,7 @@ namespace Cthangover.Core.Actions
         /// so missing quests are silently skipped. Publishes a
         /// <see cref="QuestStatusChangedEvent"/> only when the status
         /// actually changed; setting the same status is a no-op that
-        /// publishes nothing.
+        /// publishes nothing. Starting a quest also sounds its first journal entry.
         /// </summary>
         public void SetStatus(string id, string status)
         {
@@ -80,6 +83,7 @@ namespace Cthangover.Core.Actions
                 var newStatus = Enums<QuestStatus>.Parse(status);
                 if (quest.Status == newStatus)
                     return;
+                var isFirstEntry = quest.Status == QuestStatus.NotStarted && newStatus == QuestStatus.Progress;
                 var oldStatus = quest.Status.ToString();
                 quest.Status = newStatus;
                 ModEventBus.Publish(new QuestStatusChangedEvent
@@ -88,6 +92,8 @@ namespace Cthangover.Core.Actions
                     OldStatus = oldStatus,
                     NewStatus = status,
                 });
+                if (isFirstEntry)
+                    PlayJournalSound();
             }
             catch (Exception ex)
             {
@@ -99,15 +105,28 @@ namespace Cthangover.Core.Actions
         /// Updates the numeric progress level within the quest's data
         /// object (quest.Data.Status). Separate from SetStatus which
         /// controls the global lifecycle state. Routes through TryGet
-        /// with null-conditional access — if the quest doesn't exist,
+        /// — if the quest doesn't exist,
         /// the call is silently skipped. No bounds checking: the caller
         /// is responsible for meaningful level values. The
         /// <see cref="QuestDataStatusChangedEvent"/> is published by
-        /// <see cref="QuestData.SetStatus"/> itself.
+        /// <see cref="QuestData.SetStatus"/> itself. Advancing a visible quest
+        /// sounds the new journal entry; repeated stages and regressions are silent.
         /// </summary>
         public void SetDataStatus(string id, int level)
         {
-            TryGet(id)?.Data.SetStatus(level);
+            var quest = TryGet(id);
+            if (quest == null)
+                return;
+            var isNewEntry = quest.Status != QuestStatus.NotStarted && level > quest.Data.Status;
+            quest.Data.SetStatus(level);
+            if (isNewEntry)
+                PlayJournalSound();
+        }
+
+        private static void PlayJournalSound()
+        {
+            var audioService = SceneContextNode.FindNode<Node>("AudioService") as IAudioService;
+            audioService?.PlaySound("ui/journal", SoundType.UI);
         }
 
         /// <summary>
