@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "ct",
   "description": "Quests engine: quests with numbered steps that scenarios start, advance and finish, and the journal panel that shows them.",
-  "category": "engine, library",
+  "categories": ["engine", "library"],
   "sources": [
     "src/**/*.cs"
   ],
