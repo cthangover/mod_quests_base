@@ -1,7 +1,7 @@
 {
   "id": "quests_base",
   "name": "Quests Engine",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "ct",
   "description": "Quests engine: quests with numbered steps that scenarios start, advance and finish, and the journal panel that shows them.",
   "category": "engine, library",
@@ -9,7 +9,7 @@
     "src/**/*.cs"
   ],
   "test_sources": ["tests/*.cs"],
-  "depends": ["characters_base>=1", "ui_base>=1"],
+  "depends": ["characters_base>=0.1.0", "ui_base>=0.1.0"],
   "ui": [
     {
       "id": "journal",
